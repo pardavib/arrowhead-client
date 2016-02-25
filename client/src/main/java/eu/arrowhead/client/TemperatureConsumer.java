@@ -26,42 +26,67 @@ import eu.arrowhead.common.model.messages.ServiceRequestForm;
 @Produces(MediaType.TEXT_PLAIN)
 public class TemperatureConsumer {
 
-	private String coreURI = "localhost:8080/core/";
-	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "Demo", "127.0.0.1", "8080",
+	/**
+	 * Consumer's ArrowheadSystem
+	 */
+	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "Demo", "localhost", "8080",
 			"authenticationInfo");
 	private static OrchestrationForm providerForm = null;
-	private Map<String, Boolean> orchestrationFlags = new HashMap<>();
 
 	public TemperatureConsumer() {
 		super();
+	}
+
+	/**
+	 * This function invokes the consumer to contact the Orchestration service
+	 * for a suitable Temperature Provider.
+	 * 
+	 * @return String
+	 */
+	@GET
+	@Path("/consumer/invoke")
+	public String invokeConsume() {
+		ServiceRequestForm serviceRequestForm = new ServiceRequestForm();
+		Map<String, Boolean> orchestrationFlags = new HashMap<>();
+
+		// Preparing ServiceRequestForm
+		serviceRequestForm.setRequestedService(getTemperatureService());
+		serviceRequestForm.setRequestedQoS("BEST_EFFORT");
+		serviceRequestForm.setRequesterSystem(this.arrowheadSystem);
+
+		// Preparing Orchestration Flags for the ServiceRequestForm
 		orchestrationFlags.put("Matchmaking", false);
 		orchestrationFlags.put("ExternalServiceRequest", false);
 		orchestrationFlags.put("TriggerInterCloud", false);
 		orchestrationFlags.put("MetadataSearch", false);
 		orchestrationFlags.put("PingProvider", false);
-	}
 
-	@GET
-	@Path("/consumer/invoke")
-	public String invokeConsume() {
-		ServiceRequestForm serviceRequestForm = new ServiceRequestForm();
-		
-		serviceRequestForm.setRequestedService(getTemperatureService());
-		serviceRequestForm.setRequestedQoS("BEST_EFFORT");
-		serviceRequestForm.setRequesterSystem(this.arrowheadSystem);
 		serviceRequestForm.setOrchestrationFlags(orchestrationFlags);
-		
+
+		// Invoke the orchestration process and store the reponse
 		getOrchestrationResponse(serviceRequestForm);
-		
-		return "This is the Client consume stub.";
+
+		return "Provider successfully obtained.";
 	}
 
+	/**
+	 * This function invokes the consumer to query the Temperature Provider for
+	 * the current temperature data.
+	 * 
+	 * @return String
+	 */
 	@GET
 	@Path("/consumer/query")
 	public String queryProvider() {
 		return getCurrentTemperature();
 	}
 
+	/**
+	 * This function handles the necessary communication through REST to get the
+	 * current temperature data.
+	 * 
+	 * @return String Temperature data.
+	 */
 	private String getCurrentTemperature() {
 		Client client = ClientBuilder.newClient();
 		URI uri = UriBuilder.fromUri(providerForm.getServiceURI()).path("current").build();
@@ -72,9 +97,16 @@ public class TemperatureConsumer {
 		return response.readEntity(String.class);
 	}
 
+	/**
+	 * This function handles the necessary communication through REST to get the
+	 * orchestration response from the Orchestrator Service.
+	 * 
+	 * @return void
+	 */
 	private void getOrchestrationResponse(ServiceRequestForm serviceRequestForm) {
 		Client client = ClientBuilder.newClient();
-		URI uri = UriBuilder.fromUri(coreURI).path("orchestrator").path("orchestration").build();
+		URI uri = UriBuilder.fromUri(this.arrowheadSystem.getIPAddress() + ":" + this.arrowheadSystem.getPort())
+				.path("orchestrator").path("orchestration").build();
 
 		WebTarget target = client.target(uri);
 		Response response = target.request().header("Content-type", "application/json")
@@ -85,6 +117,12 @@ public class TemperatureConsumer {
 		return;
 	}
 
+	/**
+	 * This function provides an ArrowheadService require to create a suitable
+	 * ServiceRequestForm.
+	 * 
+	 * @return ArrowheadService
+	 */
 	private ArrowheadService getTemperatureService() {
 		ArrowheadService temperatureService = new ArrowheadService();
 		ArrayList<String> interfaces = new ArrayList<String>();
