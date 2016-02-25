@@ -27,12 +27,19 @@ import eu.arrowhead.common.model.messages.ServiceRequestForm;
 public class TemperatureConsumer {
 
 	/**
-	 * Consumer's ArrowheadSystem
+	 * Consumer's ArrowheadSystem.
 	 */
-	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "Demo", "localhost", "8080",
+	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "ConsumerSystem", "localhost", "8080",
 			"authenticationInfo");
+
+	/**
+	 * Stores the OrchestrationForm obtained from the Orchestrator service.
+	 */
 	private static OrchestrationForm providerForm = null;
 
+	/**
+	 * Default constructor.
+	 */
 	public TemperatureConsumer() {
 		super();
 	}
@@ -44,8 +51,8 @@ public class TemperatureConsumer {
 	 * @return String
 	 */
 	@GET
-	@Path("/consumer/invoke")
-	public String invokeConsume() {
+	@Path("/invoke")
+	public String invokeConsumer() {
 		ServiceRequestForm serviceRequestForm = new ServiceRequestForm();
 		Map<String, Boolean> orchestrationFlags = new HashMap<>();
 
@@ -66,17 +73,17 @@ public class TemperatureConsumer {
 		// Invoke the orchestration process and store the reponse
 		getOrchestrationResponse(serviceRequestForm);
 
-		return "Provider successfully obtained.";
+		return "Provider successfully obtained from Orchestrator.";
 	}
 
 	/**
-	 * This function invokes the consumer to query the Temperature Provider for
+	 * This function invokes the consumer to query the TemperatureProvider for
 	 * the current temperature data.
 	 * 
 	 * @return String
 	 */
 	@GET
-	@Path("/consumer/query")
+	@Path("/query")
 	public String queryProvider() {
 		return getCurrentTemperature();
 	}
@@ -99,7 +106,7 @@ public class TemperatureConsumer {
 
 	/**
 	 * This function handles the necessary communication through REST to get the
-	 * orchestration response from the Orchestrator Service.
+	 * orchestration response from the Orchestrator service.
 	 * 
 	 * @return void
 	 */
@@ -118,7 +125,7 @@ public class TemperatureConsumer {
 	}
 
 	/**
-	 * This function provides an ArrowheadService require to create a suitable
+	 * This function provides an ArrowheadService required to create a suitable
 	 * ServiceRequestForm.
 	 * 
 	 * @return ArrowheadService
