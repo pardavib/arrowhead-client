@@ -117,7 +117,7 @@ public class TemperatureConsumer {
 
 		WebTarget target = client.target(uri);
 		Response response = target.request().header("Content-type", "application/json")
-				.put(Entity.json(serviceRequestForm));
+				.post(Entity.json(serviceRequestForm));
 
 		providerForm = response.readEntity(OrchestrationResponse.class).getResponse().get(0);
 

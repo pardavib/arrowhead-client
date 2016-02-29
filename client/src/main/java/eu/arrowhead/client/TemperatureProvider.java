@@ -25,7 +25,8 @@ public class TemperatureProvider extends ArrowheadService {
 	/**
 	 * Provider's ArrowheadSystem.
 	 */
-	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "ProviderSystem", "localhost", "8080",
+	// saját adatok
+	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "ProviderSystem", "152.66.245.169", "8080",
 			"authenticationInfo");
 
 	/**
@@ -89,7 +90,7 @@ public class TemperatureProvider extends ArrowheadService {
 				.path("ServiceRegistry").path(this.getServiceGroup()).path(this.getServiceDefinition()).build();
 		WebTarget target = client.target(uri);
 		Response response = target.request().header("Content-type", "application/json")
-				.put(Entity.json(serviceRegistryEntry));
+				.post(Entity.json(serviceRegistryEntry));
 		return response.getStatus();
 	}
 
