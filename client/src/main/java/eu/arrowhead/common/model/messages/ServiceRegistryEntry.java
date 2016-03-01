@@ -17,13 +17,13 @@ public class ServiceRegistryEntry {
 		super();
 	}
 
-	public ServiceRegistryEntry(ArrowheadSystem provider, String serviceURI, String serviceMetadata, String tSIG_key,
+	public ServiceRegistryEntry(ArrowheadSystem provider, String serviceURI, String serviceMetadata, String tsig_key,
 			String version) {
 		super();
 		this.provider = provider;
 		this.serviceURI = serviceURI;
 		this.serviceMetadata = serviceMetadata;
-		this.tSIG_key = tSIG_key;
+		this.tSIG_key = tsig_key;
 		this.version = version;
 	}
 
@@ -66,5 +66,4 @@ public class ServiceRegistryEntry {
 	public void setVersion(String version) {
 		this.version = version;
 	}
-
 }

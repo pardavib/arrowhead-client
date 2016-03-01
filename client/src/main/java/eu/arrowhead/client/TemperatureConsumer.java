@@ -52,9 +52,10 @@ public class TemperatureConsumer {
 	 */
 	@GET
 	@Path("/invoke")
-	public String invokeConsumer() {
+	public Response invokeConsumer() {
 		ServiceRequestForm serviceRequestForm = new ServiceRequestForm();
 		Map<String, Boolean> orchestrationFlags = new HashMap<>();
+		Response response = null;
 
 		// Preparing ServiceRequestForm
 		serviceRequestForm.setRequestedService(getTemperatureService());
@@ -62,18 +63,18 @@ public class TemperatureConsumer {
 		serviceRequestForm.setRequesterSystem(this.arrowheadSystem);
 
 		// Preparing Orchestration Flags for the ServiceRequestForm
-		orchestrationFlags.put("Matchmaking", false);
-		orchestrationFlags.put("ExternalServiceRequest", false);
-		orchestrationFlags.put("TriggerInterCloud", false);
-		orchestrationFlags.put("MetadataSearch", false);
-		orchestrationFlags.put("PingProvider", false);
+		orchestrationFlags.put("matchmaking", false);
+		orchestrationFlags.put("externalServiceRequest", false);
+		orchestrationFlags.put("triggerInterCloud", false);
+		orchestrationFlags.put("metadataSearch", false);
+		orchestrationFlags.put("pingProvider", false);
 
 		serviceRequestForm.setOrchestrationFlags(orchestrationFlags);
 
 		// Invoke the orchestration process and store the reponse
-		getOrchestrationResponse(serviceRequestForm);
+		response = getOrchestrationResponse(serviceRequestForm);
 
-		return "Provider successfully obtained from Orchestrator.";
+		return response;
 	}
 
 	/**
@@ -110,18 +111,18 @@ public class TemperatureConsumer {
 	 * 
 	 * @return void
 	 */
-	private void getOrchestrationResponse(ServiceRequestForm serviceRequestForm) {
+	private Response getOrchestrationResponse(ServiceRequestForm serviceRequestForm) {
 		Client client = ClientBuilder.newClient();
-		URI uri = UriBuilder.fromUri(this.arrowheadSystem.getIPAddress() + ":" + this.arrowheadSystem.getPort())
+		URI uri = UriBuilder.fromPath("http://"+"152.66.245.169" + ":" + "8080").path("core")
 				.path("orchestrator").path("orchestration").build();
 
 		WebTarget target = client.target(uri);
 		Response response = target.request().header("Content-type", "application/json")
 				.post(Entity.json(serviceRequestForm));
 
-		providerForm = response.readEntity(OrchestrationResponse.class).getResponse().get(0);
+		//providerForm = response.readEntity(OrchestrationResponse.class).getResponse().get(0);
 
-		return;
+		return response;
 	}
 
 	/**
