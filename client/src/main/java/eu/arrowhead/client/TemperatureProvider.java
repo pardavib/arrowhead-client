@@ -28,8 +28,8 @@ public class TemperatureProvider extends ArrowheadService {
 	/////////////////////////////////////////////
 	private String own_IP = "152.66.157.5";
 	private String registry_IP ="152.66.245.168";
-	private String serviceGroup = "TemperatureProba";
-	private String serviceDefinition = "IndoorTemperatureProba";
+	private String serviceGroup = "TemperatureProba100";
+	private String serviceDefinition = "IndoorTemperatureProba100";
 	/////////////////////////////////////////////
 	
 	/**

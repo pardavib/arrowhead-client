@@ -32,8 +32,8 @@ public class TemperatureConsumer {
 	//// CONFIG /////////////////////////////////
 	/////////////////////////////////////////////
 	private String target_IP = "152.66.245.167";
-	private String serviceGroup = "TemperatureProba";
-	private String serviceDefinition = "IndoorTemperatureProba";
+	private String serviceGroup = "TemperatureProba100";
+	private String serviceDefinition = "IndoorTemperatureProba100";
 	/////////////////////////////////////////////
 
 	/**
