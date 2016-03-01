@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -25,11 +26,20 @@ import eu.arrowhead.common.model.messages.ServiceRequestForm;
 @Path("consumer")
 @Produces(MediaType.TEXT_PLAIN)
 public class TemperatureConsumer {
+	
+	
+	/////////////////////////////////////////////
+	//// CONFIG /////////////////////////////////
+	/////////////////////////////////////////////
+	private String target_IP = "152.66.245.167";
+	private String serviceGroup = "TemperatureProba";
+	private String serviceDefinition = "IndoorTemperatureProba";
+	/////////////////////////////////////////////
 
 	/**
 	 * Consumer's ArrowheadSystem.
 	 */
-	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "ConsumerSystem", "localhost", "8080",
+	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("PROBA", "ConsumerSystem", "localhost", "8080",
 			"authenticationInfo");
 
 	/**
@@ -86,6 +96,10 @@ public class TemperatureConsumer {
 	@GET
 	@Path("/query")
 	public String queryProvider() {
+		if (providerForm == null) {
+			return "No orchestrated service data could be found.";
+		}
+		
 		return getCurrentTemperature();
 	}
 
@@ -97,7 +111,10 @@ public class TemperatureConsumer {
 	 */
 	private String getCurrentTemperature() {
 		Client client = ClientBuilder.newClient();
-		URI uri = UriBuilder.fromUri(providerForm.getServiceURI()).path("current").build();
+		URI uri = UriBuilder.fromPath(
+				"http://" + providerForm.getProvider().getIPAddress() + ":" + providerForm.getProvider().getPort())
+				.path(providerForm.getServiceURI()).build();
+		System.out.println("Querying: " + uri.toString());
 
 		WebTarget target = client.target(uri);
 		Response response = target.request().get();
@@ -113,14 +130,26 @@ public class TemperatureConsumer {
 	 */
 	private Response getOrchestrationResponse(ServiceRequestForm serviceRequestForm) {
 		Client client = ClientBuilder.newClient();
-		URI uri = UriBuilder.fromPath("http://"+"152.66.245.167" + ":" + "8080").path("core")
-				.path("orchestrator").path("orchestration").build();
+		URI uri = UriBuilder.fromPath("http://" + target_IP + ":" + "8080").path("core").path("orchestrator")
+				.path("orchestration").build();
 
 		WebTarget target = client.target(uri);
 		Response response = target.request().header("Content-type", "application/json")
 				.post(Entity.json(serviceRequestForm));
 
-		//providerForm = response.readEntity(OrchestrationResponse.class).getResponse().get(0);
+		try {
+			for (OrchestrationForm form : response.readEntity(OrchestrationResponse.class).getResponse()) {
+				if (form.getService().getServiceDefinition().equals(serviceDefinition)) {
+					providerForm = form;
+					System.out.println(form.getServiceURI());
+				}
+			}
+			
+			//providerForm = response.readEntity(OrchestrationResponse.class).getResponse().get(0);
+			System.out.println("Provider Form saved successfully.");
+		} catch (ProcessingException e) {
+			System.out.println("Processing exception in consumer: " + e.getMessage());
+		}
 
 		return response;
 	}
@@ -135,10 +164,10 @@ public class TemperatureConsumer {
 		ArrowheadService temperatureService = new ArrowheadService();
 		ArrayList<String> interfaces = new ArrayList<String>();
 
-		temperatureService.setServiceGroup("Temperature");
-		temperatureService.setServiceDefinition("IndoorTemperature");
+		temperatureService.setServiceGroup(serviceGroup);
+		temperatureService.setServiceDefinition(serviceDefinition);
 		temperatureService.setMetaData("Dummy metadata");
-		interfaces.add("REST_JSON");
+		interfaces.add("RESTJSON");
 		temperatureService.setInterfaces(interfaces);
 
 		return temperatureService;

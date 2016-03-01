@@ -22,10 +22,20 @@ import eu.arrowhead.common.model.messages.ServiceRegistryEntry;
 @Produces(MediaType.TEXT_PLAIN)
 public class TemperatureProvider extends ArrowheadService {
 
+	
+	/////////////////////////////////////////////
+	//// CONFIG /////////////////////////////////
+	/////////////////////////////////////////////
+	private String own_IP = "152.66.157.5";
+	private String registry_IP ="152.66.245.168";
+	private String serviceGroup = "TemperatureProba";
+	private String serviceDefinition = "IndoorTemperatureProba";
+	/////////////////////////////////////////////
+	
 	/**
 	 * Own ArrowheadSystem info.
 	 */
-	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("BUTE", "TemperatureTest", "127.0.0.1", "8080",
+	private ArrowheadSystem arrowheadSystem = new ArrowheadSystem("PROBA", "TemperatureProvider", own_IP, "8080",
 			"tempcert");
 
 	/**
@@ -34,13 +44,13 @@ public class TemperatureProvider extends ArrowheadService {
 	public TemperatureProvider() {
 		super();
 		ArrayList<String> interfaces = new ArrayList<String>();
-		this.setServiceGroup("Temperature");
-		this.setServiceDefinition("IndoorTemperature");
+		this.setServiceGroup(serviceGroup);
+		this.setServiceDefinition(serviceDefinition);
 		this.setMetaData("Dummy metadata");
 		interfaces.add("RESTJSON");
 		this.setInterfaces(interfaces);
 	}
-	
+
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getIt() {
@@ -60,15 +70,15 @@ public class TemperatureProvider extends ArrowheadService {
 
 		// Preparing ServiceRegistryEntry
 		serviceRegistryEntry.setProvider(arrowheadSystem);
-		serviceRegistryEntry.setServiceURI(
-				this.arrowheadSystem.getIPAddress() + ":" + this.arrowheadSystem.getPort() + "/temperature");
+		serviceRegistryEntry.setServiceURI("/client/temperature/current");
 		serviceRegistryEntry.setServiceMetadata(this.getMetaData());
 		serviceRegistryEntry.settSIG_key("RIuxP+vb5GjLXJo686NvKQ=="); // .168
-		serviceRegistryEntry.setVersion("1.0");
+		// serviceRegistryEntry.settSIG_key("RM/jKKEPYB83peT0DQnYGg=="); // .237
 
-		/*if (registerProvider(serviceRegistryEntry) == 200) {
-			return "Provider successfully registered to Service Registry.";
-		}*/
+		/*
+		 * if (registerProvider(serviceRegistryEntry) == 200) { return
+		 * "Provider successfully registered to Service Registry."; }
+		 */
 
 		return registerProvider(serviceRegistryEntry);
 	}
@@ -92,8 +102,8 @@ public class TemperatureProvider extends ArrowheadService {
 	 */
 	public Response registerProvider(ServiceRegistryEntry serviceRegistryEntry) {
 		Client client = ClientBuilder.newClient();
-		URI uri = UriBuilder.fromPath("http://"+"152.66.245.168" + ":" + "8080").path("core")
-				.path("serviceregistry").path(this.getServiceGroup()).path(this.getServiceDefinition()).path("RESTJSON").build();
+		URI uri = UriBuilder.fromPath("http://" + registry_IP + ":" + "8080").path("core").path("serviceregistry")
+				.path(this.getServiceGroup()).path(this.getServiceDefinition()).path("RESTJSON").build();
 		WebTarget target = client.target(uri);
 		System.out.println(target.getUri().toString());
 		Response response = target.request().header("Content-type", "application/json")
